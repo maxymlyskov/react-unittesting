@@ -6,13 +6,13 @@ describe('SearchBox', () => {
     const renderComponent = () => {
         const onChange = vi.fn()
         render(<SearchBox onChange={onChange} />)
+        const user = userEvent.setup()
         const input = screen.getByPlaceholderText(/search/i)
 
-        return { onChange, input }
+        return { onChange, input, user }
     }
     it('should call onChange func when user clicks enter & there is text in input', async () => {
-        const { onChange, input } = renderComponent()
-        const user = userEvent.setup()
+        const { onChange, input, user } = renderComponent()
         const searchTerm = 'search term'
 
         await user.type(input, `${searchTerm}{enter}`)
@@ -20,8 +20,7 @@ describe('SearchBox', () => {
         expect(onChange).toHaveBeenCalledWith(searchTerm)
     })
     it('should not call onChange func when user clicks enter & there is no text in input', async () => {
-        const { onChange, input } = renderComponent()
-        const user = userEvent.setup()
+        const { onChange, input, user } = renderComponent()
 
         await user.type(input, '{enter}')
 
