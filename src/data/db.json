@@ -391,6 +391,12 @@
       "price": 10,
       "categoryId": 1,
       "id": 63
+    },
+    {
+      "name": "biceps",
+      "price": 12,
+      "categoryId": 2,
+      "id": 64
     }
   ]
 }
