@@ -8,22 +8,24 @@ describe('OrderStatusSelector', () => {
         render(<Theme><OrderStatusSelector onChange={vi.fn()} /></Theme>)
         const button = screen.getByRole('combobox')
 
-        return { button }
+        return {
+            trigger: button, getOptions: () => screen.findAllByRole('option')
+        }
     }
     it('should render New as the default value', () => {
-        const { button } = renderComponent()
+        const { trigger } = renderComponent()
 
-        expect(button).toHaveTextContent(/new/i)
+        expect(trigger).toHaveTextContent(/new/i)
     })
 
     it('should render correct statuses', async () => {
-        const { button } = renderComponent()
+        const { trigger, getOptions } = renderComponent()
+
         const user = userEvent.setup()
-        await user.click(button)
+        await user.click(trigger)
 
-        const items = await screen.findAllByRole('option')
+        const items = await getOptions()
         expect(items).toHaveLength(3)
-
         const correctLabels = ['New', 'Processed', 'Fulfilled']
         const labels = items.map(item => item.textContent)
         expect(labels).toEqual(correctLabels)
