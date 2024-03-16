@@ -41,6 +41,11 @@ describe('ProductDetail', () => {
         render(<ProductDetail productId={productId} />)
         await waitForElementToBeRemoved(() => screen.queryByText('Loading...'))
     })
+    it('should remove the loading if data fetching failed', async () => {
+        server.use(http.get('/products/:id', () => HttpResponse.error()))
+        render(<ProductDetail productId={productId} />)
+        await waitForElementToBeRemoved(() => screen.queryByText('Loading...'))
+    })
 
     it('should render an error message if request fails', async () => {
         server.use(http.get('/products/:id', () => HttpResponse.error()))
