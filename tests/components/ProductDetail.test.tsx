@@ -32,8 +32,8 @@ describe('ProductDetail', () => {
         expect(loading).toBeInTheDocument()
     })
 
-    it('should render an error message if no product', async () => {
-        server.use(http.get('/products/:id', () => HttpResponse.json(undefined)))
+    it('should render an error message if request fails', async () => {
+        server.use(http.get('/products/:id', () => HttpResponse.error()))
         render(<ProductDetail productId={productId} />)
 
         const error = await screen.findByText(/error/i)
