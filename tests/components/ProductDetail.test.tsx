@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { HttpResponse, http } from 'msw'
+import { HttpResponse, delay, http } from 'msw'
 import ProductDetail from '../../src/components/ProductDetail'
 import { db } from '../mocks/db'
 import { server } from '../mocks/server'
@@ -25,7 +25,12 @@ describe('ProductDetail', () => {
         expect(price).toBeInTheDocument()
     })
 
-    it('should render a loading message', async () => {
+    it('should render a loading message when fetching data', async () => {
+        server.use(http.get('/products/:id', async () => {
+            await delay()
+
+            return HttpResponse.json([])
+        }))
         render(<ProductDetail productId={productId} />)
 
         const loading = await screen.findByText('Loading...')
