@@ -41,5 +41,13 @@ describe('ProductList', () => {
         expect(error).toBeInTheDocument()
     })
 
+    it('should render an error message if the request fails', async () => {
+        server.use(http.get('/products', () => HttpResponse.error()))
+        render(<ProductList />)
+
+        const error = await screen.findByText(/error/i)
+        expect(error).toBeInTheDocument()
+    })
+
 
 })
