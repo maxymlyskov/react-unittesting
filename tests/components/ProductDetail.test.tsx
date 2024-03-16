@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitForElementToBeRemoved } from '@testing-library/react'
 import { HttpResponse, delay, http } from 'msw'
 import ProductDetail from '../../src/components/ProductDetail'
 import { db } from '../mocks/db'
@@ -35,6 +35,11 @@ describe('ProductDetail', () => {
 
         const loading = await screen.findByText('Loading...')
         expect(loading).toBeInTheDocument()
+    })
+
+    it('should remove the loading message after products fetched', async () => {
+        render(<ProductDetail productId={productId} />)
+        await waitForElementToBeRemoved(() => screen.queryByText('Loading...'))
     })
 
     it('should render an error message if request fails', async () => {
