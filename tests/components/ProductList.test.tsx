@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitForElementToBeRemoved } from '@testing-library/react'
+import { HttpResponse, delay, http } from 'msw'
 import ProductList from '../../src/components/ProductList'
-import { server } from '../mocks/server'
-import { http, HttpResponse } from 'msw'
 import { db } from '../mocks/db'
+import { server } from '../mocks/server'
 
 describe('ProductList', () => {
 
@@ -26,11 +26,21 @@ describe('ProductList', () => {
         expect(items.length).toBeGreaterThan(0)
     })
 
-    it('should render a loading message', async () => {
+    it('should render a loading message on', async () => {
+        server.use(http.get('/products/:id', async () => {
+            await delay()
+
+            return HttpResponse.json([])
+        }))
         render(<ProductList />)
 
         const loading = await screen.findByText('Loading...')
         expect(loading).toBeInTheDocument()
+    })
+
+    it('should remove the loading message after products fetched', async () => {
+        render(<ProductList />)
+        await waitForElementToBeRemoved(() => screen.queryByText('Loading...'))
     })
 
     it('should render an error message if no products', async () => {
