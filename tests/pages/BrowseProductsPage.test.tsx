@@ -1,9 +1,8 @@
-import { Theme } from '@radix-ui/themes';
 import { render, screen, waitForElementToBeRemoved } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Category, Product } from '../../src/entities';
 import BrowseProductsPage from '../../src/pages/BrowseProductsPage';
-import { CartProvider } from '../../src/providers/CartProvider';
+import AllProviders from '../AllProviders';
 import { db, getProductsByCategory } from '../mocks/db';
 import { simulateDelay, simulateError } from '../utils';
 
@@ -124,11 +123,7 @@ describe('BrowseProductsPage', () => {
     })
 
     const renderComponent = () => {
-        render(<Theme>
-            <CartProvider>
-                <BrowseProductsPage />
-            </CartProvider>
-        </Theme>)
+        render(<BrowseProductsPage />, { wrapper: AllProviders })
 
         const getProductsSkeleton = () => screen.queryByRole('progressbar', { name: /products/i })
 
