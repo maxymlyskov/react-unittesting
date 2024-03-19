@@ -1,4 +1,5 @@
 import { render, screen, waitForElementToBeRemoved } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import ProductForm from '../../src/components/ProductForm'
 import { Category, Product } from '../../src/entities'
 import AllProviders from '../AllProviders'
@@ -25,8 +26,9 @@ describe('ProductForm', () => {
                 const nameInput = screen.getByPlaceholderText(/name/i)
                 const priceInput = screen.getByPlaceholderText(/price/i)
                 const categorySelect = screen.getByRole('combobox', { name: /category/i })
+                const submitButton = screen.getByRole('button', { name: /submit/i })
 
-                return { nameInput, priceInput, categorySelect }
+                return { nameInput, priceInput, categorySelect, submitButton }
             },
 
         }
@@ -66,5 +68,32 @@ describe('ProductForm', () => {
         const { nameInput } = inputs
 
         expect(nameInput).toHaveFocus()
+    })
+
+    it.each([{
+        scenario: 'missing',
+        errorMessage: /required/i,
+    },
+    {
+        scenario: 'longer than 255 characters',
+        name: 'a'.repeat(256),
+        errorMessage: /255/i,
+    },
+    ])('should display an error when name is $scenario', async ({ name, errorMessage }) => {
+        const { waitForFormToLoad } = renderComponent()
+
+        const form = await waitForFormToLoad()
+
+        const user = userEvent.setup()
+        if (name) await user.type(form.nameInput, name)
+        await user.type(form.priceInput, '10')
+        await user.click(form.categorySelect)
+        const options = screen.getAllByRole('option')
+        await user.click(options[0])
+        await user.click(form.submitButton)
+        const error = await screen.findByRole('alert')
+
+        expect(error).toBeInTheDocument()
+        expect(error).toHaveTextContent(errorMessage)
     })
 })
