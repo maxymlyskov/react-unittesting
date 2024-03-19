@@ -20,24 +20,25 @@ describe('ProductForm', () => {
 
 
         return {
-            waitForFormToLoad: () => waitForElementToBeRemoved(() => screen.getByText(/loading/i)),
-            getInputs: () => {
+            waitForFormToLoad: async () => {
+                await waitForElementToBeRemoved(() => screen.getByText(/loading/i))
                 const nameInput = screen.getByPlaceholderText(/name/i)
                 const priceInput = screen.getByPlaceholderText(/price/i)
                 const categorySelect = screen.getByRole('combobox', { name: /category/i })
 
                 return { nameInput, priceInput, categorySelect }
-            }
+            },
+
         }
 
     }
 
     it('should render form fields', async () => {
-        const { getInputs, waitForFormToLoad } = renderComponent()
+        const { waitForFormToLoad } = renderComponent()
 
-        await waitForFormToLoad()
+        const inputs = await waitForFormToLoad()
 
-        const { nameInput, priceInput, categorySelect } = getInputs()
+        const { nameInput, priceInput, categorySelect } = inputs
 
         expect(nameInput).toBeInTheDocument()
         expect(priceInput).toBeInTheDocument()
@@ -46,14 +47,24 @@ describe('ProductForm', () => {
 
     it('should populate form fields when editing a product', async () => {
         const product: Product = { id: 1, name: 'Product 1', price: 100, categoryId: category.id }
-        const { getInputs, waitForFormToLoad } = renderComponent(product)
+        const { waitForFormToLoad } = renderComponent(product)
 
-        await waitForFormToLoad()
+        const inputs = await waitForFormToLoad()
 
-        const { nameInput, priceInput, categorySelect } = getInputs()
+        const { nameInput, priceInput, categorySelect } = inputs
 
         expect(nameInput).toHaveValue(product.name)
         expect(priceInput).toHaveValue(product.price.toString())
         expect(categorySelect).toHaveTextContent(category.name)
+    })
+
+    it('should focus on name field on first load', async () => {
+        const { waitForFormToLoad } = renderComponent()
+
+        const inputs = await waitForFormToLoad()
+
+        const { nameInput } = inputs
+
+        expect(nameInput).toHaveFocus()
     })
 })
