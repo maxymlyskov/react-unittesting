@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, waitForElementToBeRemoved } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ProductForm from '../../src/components/ProductForm'
@@ -21,6 +25,12 @@ describe('ProductForm', () => {
 
 
         return {
+            expectErrorToBeInTheDocument: async (message: RegExp) => {
+                const error = await screen.findByRole('alert')
+
+                expect(error).toBeInTheDocument()
+                expect(error).toHaveTextContent(message)
+            },
             waitForFormToLoad: async () => {
                 await waitForElementToBeRemoved(() => screen.getByText(/loading/i))
                 const nameInput = screen.getByPlaceholderText(/name/i)
@@ -28,7 +38,30 @@ describe('ProductForm', () => {
                 const categorySelect = screen.getByRole('combobox', { name: /category/i })
                 const submitButton = screen.getByRole('button', { name: /submit/i })
 
-                return { nameInput, priceInput, categorySelect, submitButton }
+                type FormData = {
+                    [K in keyof Product]: any
+                }
+
+                const validData: FormData = {
+                    id: 1,
+                    name: 'Product 1',
+                    price: 100,
+                    categoryId: category.id
+                }
+
+                const fill = async (product: FormData) => {
+                    const user = userEvent.setup()
+
+                    if (product.name) await user.type(nameInput, product.name)
+                    if (product.price) await user.type(priceInput, product.price.toString())
+
+                    await user.click(categorySelect)
+                    const options = screen.getAllByRole('option')
+                    await user.click(options[0])
+                    await user.click(submitButton)
+                }
+
+                return { nameInput, priceInput, categorySelect, submitButton, fill, validData }
             },
 
         }
@@ -80,21 +113,12 @@ describe('ProductForm', () => {
         errorMessage: /255/i,
     },
     ])('should display an error when name is $scenario', async ({ name, errorMessage }) => {
-        const { waitForFormToLoad } = renderComponent()
+        const { waitForFormToLoad, expectErrorToBeInTheDocument } = renderComponent()
 
         const form = await waitForFormToLoad()
+        await form.fill({ ...form.validData, name })
 
-        const user = userEvent.setup()
-        if (name) await user.type(form.nameInput, name)
-        await user.type(form.priceInput, '10')
-        await user.click(form.categorySelect)
-        const options = screen.getAllByRole('option')
-        await user.click(options[0])
-        await user.click(form.submitButton)
-        const error = await screen.findByRole('alert')
-
-        expect(error).toBeInTheDocument()
-        expect(error).toHaveTextContent(errorMessage)
+        await expectErrorToBeInTheDocument(errorMessage)
     })
 
     it.each([{
@@ -122,20 +146,11 @@ describe('ProductForm', () => {
         errorMessage: /required/i,
     },
     ])('should display an error when price is $scenario', async ({ price, errorMessage }) => {
-        const { waitForFormToLoad } = renderComponent()
+        const { waitForFormToLoad, expectErrorToBeInTheDocument } = renderComponent()
 
         const form = await waitForFormToLoad()
+        await form.fill({ ...form.validData, price })
 
-        const user = userEvent.setup()
-        await user.type(form.nameInput, 'Product 1')
-        if (price) await user.type(form.priceInput, price)
-        await user.click(form.categorySelect)
-        const options = screen.getAllByRole('option')
-        await user.click(options[0])
-        await user.click(form.submitButton)
-        const error = await screen.findByRole('alert')
-
-        expect(error).toBeInTheDocument()
-        expect(error).toHaveTextContent(errorMessage)
+        await expectErrorToBeInTheDocument(errorMessage)
     })
 })
