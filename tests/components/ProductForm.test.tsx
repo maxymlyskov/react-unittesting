@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, waitForElementToBeRemoved } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { Toaster } from 'react-hot-toast'
 import ProductForm from '../../src/components/ProductForm'
 import { Category, Product } from '../../src/entities'
 import AllProviders from '../AllProviders'
@@ -21,10 +23,15 @@ describe('ProductForm', () => {
     })
 
     const renderComponent = (product?: Product) => {
-        render(<ProductForm product={product} onSubmit={vi.fn()} />, { wrapper: AllProviders })
+        const onSubmit = vi.fn()
+        render(<>
+            <ProductForm product={product} onSubmit={onSubmit} />
+            <Toaster />
+        </>, { wrapper: AllProviders })
 
 
         return {
+            onSubmit,
             expectErrorToBeInTheDocument: async (message: RegExp) => {
                 const error = await screen.findByRole('alert')
 
@@ -55,6 +62,7 @@ describe('ProductForm', () => {
                     if (product.name) await user.type(nameInput, product.name)
                     if (product.price) await user.type(priceInput, product.price.toString())
 
+                    await user.tab()
                     await user.click(categorySelect)
                     const options = screen.getAllByRole('option')
                     await user.click(options[0])
@@ -152,5 +160,34 @@ describe('ProductForm', () => {
         await form.fill({ ...form.validData, price })
 
         await expectErrorToBeInTheDocument(errorMessage)
+    })
+
+    it('should sumbit form with the right data', async () => {
+        const { waitForFormToLoad, onSubmit } = renderComponent()
+
+        const form = await waitForFormToLoad()
+
+        await form.fill(form.validData)
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...expectedData } = form.validData
+        expect(onSubmit).toHaveBeenCalledWith(expectedData)
+
+    })
+
+    it('should diplay toast error if submission data is wrong', async () => {
+        const { waitForFormToLoad, onSubmit } = renderComponent()
+        onSubmit.mockRejectedValueOnce(new Error('An unexpected error occurred'))
+
+        const form = await waitForFormToLoad()
+
+        await form.fill(form.validData)
+
+        const toast = await screen.findByRole('status')
+
+        expect(toast).toBeInTheDocument()
+        expect(toast).toHaveTextContent(/error/i)
+
+
     })
 })
