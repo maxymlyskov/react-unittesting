@@ -1,23 +1,14 @@
-import { useEffect } from "react";
-import { fetchCategories } from "../store/categorySlice";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
+import useCategories from "../hooks/useCategories";
 
 function CategoryList() {
-  const dispatch = useAppDispatch();
-  const categories = useAppSelector((state) => state.category.list);
-  const loading = useAppSelector((state) => state.category.loading);
-  const error = useAppSelector((state) => state.category.error);
+  const { data: categories, isLoading, error } = useCategories();
 
-  useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
-
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <div>Error: {error.message}</div>;
 
   return (
     <div>
       <h2>Category List</h2>
-      {loading ? (
+      {isLoading ? (
         <div>Loading...</div>
       ) : (
         <ul>
