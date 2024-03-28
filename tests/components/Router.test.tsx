@@ -30,4 +30,10 @@ describe("Router", () => {
 
     db.product.delete({ where: { id: { equals: product.id } } });
   });
+
+  it("should render the not found page for unknown routes", () => {
+    navigateTo("/unknown");
+
+    expect(screen.getByText(/not found/i)).toBeInTheDocument();
+  });
 });
