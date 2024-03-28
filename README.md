@@ -1,9 +1,3 @@
-# Testing React Apps
-
-This is the starter project for my Reacting testing course where you'll learn everything you need to know to effectively test React apps. You can find the full course at: 
-
-https://codewithmosh.com 
-
 ## About this Project 
 
 This is a React app built with the following technologies and libraries: 
@@ -14,6 +8,7 @@ This is a React app built with the following technologies and libraries:
 - React Router 
 - React Query  
 - Redux Toolkit 
+- Vitest
 
 Please follow these instructions carefully to setup this project on your machine. 
 
@@ -67,3 +62,14 @@ This will start the back-end process at `http://localhost:3000`. If port 3000 is
 
 - json-server.json
 - src/main.tsx
+
+## Running the Unit test
+
+```bash
+# Run in common mode
+npm run test
+
+# Run in UI mode
+npm run test:ui
+```
+
